@@ -56,7 +56,23 @@ export const timerCommands = {
           timeEntry.projectId = project.id;
           console.log(chalk.gray(`📁 Project: ${project.name}`));
         } else {
-          console.log(chalk.yellow(`⚠️  Project "${options.project}" not found. Starting without project.`));
+          // Project not found, create it
+          console.log(chalk.blue(`🔨 Creating new project: "${options.project}"`));
+          try {
+            const newProject = await clockifyAPI.createProject(workspaceId, {
+              name: sanitizeInput(options.project),
+              isPublic: true,
+              billable: options.billable ?? configManager.get('billableByDefault'),
+              color: '#4CAF50' // Default green color
+            });
+            
+            timeEntry.projectId = newProject.id;
+            console.log(chalk.green(`✅ Project "${newProject.name}" created successfully!`));
+            console.log(chalk.gray(`📁 Project: ${newProject.name}`));
+          } catch (error) {
+            console.log(chalk.yellow(`⚠️  Failed to create project "${options.project}". Starting without project.`));
+            console.log(chalk.gray(`💡 Error: ${error instanceof Error ? error.message : 'Unknown error'}`));
+          }
         }
       }
 

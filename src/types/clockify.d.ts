@@ -202,6 +202,14 @@ export interface TimeEntryRequest {
   tagIds?: string[];
 }
 
+export interface ProjectRequest {
+  name: string;
+  clientId?: string;
+  isPublic?: boolean;
+  color?: string;
+  billable?: boolean;
+}
+
 export interface ApiError {
   message: string;
   code: number;

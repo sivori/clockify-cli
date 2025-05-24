@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { configManager } from './simple-config';
 import { isValidApiKey, sleep } from './utils';
-import { User, Workspace, Project, TimeEntry, TimeEntryRequest, ApiError } from '../types/clockify';
+import { User, Workspace, Project, TimeEntry, TimeEntryRequest, ProjectRequest, ApiError } from '../types/clockify';
 
 class ClockifyAPI {
   private client: AxiosInstance;
@@ -105,6 +105,17 @@ class ClockifyAPI {
    */
   async getProjects(workspaceId: string): Promise<Project[]> {
     const response = await this.client.get<Project[]>(`/workspaces/${workspaceId}/projects`);
+    return response.data;
+  }
+
+  /**
+   * Create a new project
+   */
+  async createProject(workspaceId: string, projectData: ProjectRequest): Promise<Project> {
+    const response = await this.client.post<Project>(
+      `/workspaces/${workspaceId}/projects`,
+      projectData
+    );
     return response.data;
   }
 
