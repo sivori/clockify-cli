@@ -28,7 +28,7 @@ export const timerCommands = {
 
       // Check if there's already a running timer
       const currentEntries = await clockifyAPI.getTimeEntries(workspaceId, user.id);
-      const runningEntry = currentEntries.find(entry => !entry.end);
+      const runningEntry = currentEntries.find(entry => !entry.timeInterval.end);
       
       if (runningEntry) {
         console.log(chalk.yellow('⚠️  Timer already running!'));
@@ -73,7 +73,7 @@ export const timerCommands = {
       }
       console.log(chalk.bold('Description:'), chalk.white(entry.description || 'No description'));
       console.log(chalk.bold('Billable:'), entry.billable ? chalk.green('Yes') : chalk.gray('No'));
-      console.log(chalk.bold('Started:'), chalk.white(new Date(entry.start).toLocaleTimeString()));
+      console.log(chalk.bold('Started:'), chalk.white(new Date(entry.timeInterval.start).toLocaleTimeString()));
       console.log(chalk.gray('━'.repeat(50)));
       console.log(chalk.gray('💡 Use "clockify status" to check progress or "clockify stop" to finish'));
 
@@ -105,7 +105,7 @@ export const timerCommands = {
 
       // Find running timer
       const currentEntries = await clockifyAPI.getTimeEntries(workspaceId, user.id);
-      const runningEntry = currentEntries.find(entry => !entry.end);
+      const runningEntry = currentEntries.find(entry => !entry.timeInterval.end);
       
       if (!runningEntry) {
         console.log(chalk.yellow('⚠️  No timer currently running'));
@@ -115,7 +115,9 @@ export const timerCommands = {
 
       // Stop the timer
       const stoppedEntry = await clockifyAPI.stopTimer(workspaceId, user.id);
-      const duration = new Date(stoppedEntry.end!).getTime() - new Date(stoppedEntry.start).getTime();
+      const startTime = new Date(stoppedEntry.timeInterval.start);
+      const endTime = new Date(stoppedEntry.timeInterval.end!);
+      const duration = endTime.getTime() - startTime.getTime();
       const durationMinutes = Math.round(duration / 60000);
 
       console.log(chalk.green('✅ Timer stopped successfully!'));
@@ -156,7 +158,7 @@ export const timerCommands = {
 
       // Find running timer
       const currentEntries = await clockifyAPI.getTimeEntries(workspaceId, user.id);
-      const runningEntry = currentEntries.find(entry => !entry.end);
+      const runningEntry = currentEntries.find(entry => !entry.timeInterval.end);
       
       if (!runningEntry) {
         console.log(chalk.gray('⏸️  No timer currently running'));
@@ -165,16 +167,15 @@ export const timerCommands = {
         // Show today's summary
         const today = new Date().toISOString().split('T')[0];
         const todayEntries = currentEntries.filter(entry => {
-          // Convert Date to string if needed for comparison
-          const entryDate = entry.start instanceof Date 
-            ? entry.start.toISOString().split('T')[0]
-            : (entry.start as string).split('T')[0];
-          return entryDate === today && entry.end;
+          const entryDate = entry.timeInterval.start.split('T')[0];
+          return entryDate === today && entry.timeInterval.end;
         });
         
         if (todayEntries.length > 0) {
           const totalMinutes = todayEntries.reduce((total, entry) => {
-            const duration = new Date(entry.end!).getTime() - new Date(entry.start).getTime();
+            const startTime = new Date(entry.timeInterval.start);
+            const endTime = new Date(entry.timeInterval.end!);
+            const duration = endTime.getTime() - startTime.getTime();
             return total + Math.round(duration / 60000);
           }, 0);
           
@@ -185,7 +186,8 @@ export const timerCommands = {
       }
 
       // Calculate elapsed time
-      const elapsed = new Date().getTime() - new Date(runningEntry.start).getTime();
+      const startTime = new Date(runningEntry.timeInterval.start);
+      const elapsed = new Date().getTime() - startTime.getTime();
       const elapsedMinutes = Math.round(elapsed / 60000);
 
       console.log(chalk.green('⏱️  Timer is running'));
@@ -199,7 +201,7 @@ export const timerCommands = {
         console.log(chalk.bold('Task:'), chalk.white(runningEntry.task.name));
       }
       console.log(chalk.bold('Description:'), chalk.white(runningEntry.description || 'No description'));
-      console.log(chalk.bold('Started:'), chalk.white(new Date(runningEntry.start).toLocaleTimeString()));
+      console.log(chalk.bold('Started:'), chalk.white(startTime.toLocaleTimeString()));
       console.log(chalk.bold('Elapsed:'), chalk.yellow(formatDuration(elapsedMinutes)));
       console.log(chalk.bold('Billable:'), runningEntry.billable ? chalk.green('Yes') : chalk.gray('No'));
       console.log(chalk.gray('━'.repeat(50)));
@@ -297,8 +299,8 @@ export const timerCommands = {
         console.log(chalk.bold('Project:'), chalk.white(entry.project.name));
       }
       console.log(chalk.bold('Description:'), chalk.white(entry.description || 'No description'));
-      console.log(chalk.bold('Start:'), chalk.white(new Date(entry.start).toLocaleString()));
-      console.log(chalk.bold('End:'), chalk.white(new Date(entry.end!).toLocaleString()));
+      console.log(chalk.bold('Start:'), chalk.white(new Date(entry.timeInterval.start).toLocaleString()));
+      console.log(chalk.bold('End:'), chalk.white(new Date(entry.timeInterval.end!).toLocaleString()));
       console.log(chalk.bold('Duration:'), chalk.white(formatDuration(durationMinutes)));
       console.log(chalk.bold('Billable:'), entry.billable ? chalk.green('Yes') : chalk.gray('No'));
       console.log(chalk.gray('━'.repeat(50)));

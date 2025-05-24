@@ -13,14 +13,32 @@ export interface ClockifyConfig {
 export interface TimeEntry {
   id: string;
   description: string;
-  start: Date;
-  end?: Date;
+  timeInterval: {
+    start: string; // ISO 8601 format string
+    end?: string;  // ISO 8601 format string
+    duration?: string; // ISO 8601 duration format
+  };
   project?: Project;
   task?: Task;
   billable: boolean;
   tags?: Tag[];
+  tagIds?: string[] | null;
   userId: string;
   workspaceId: string;
+  projectId?: string | null;
+  taskId?: string | null;
+  type?: string;
+  hourlyRate?: {
+    amount: number;
+    currency: string;
+  };
+  costRate?: {
+    amount: number;
+    currency: string;
+  };
+  isLocked?: boolean;
+  customFieldValues?: any[];
+  kioskId?: string | null;
 }
 
 export interface Project {
