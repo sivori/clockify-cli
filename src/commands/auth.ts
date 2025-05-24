@@ -3,6 +3,7 @@ import inquirer from 'inquirer';
 import { configManager } from '../lib/simple-config';
 import { clockifyAPI } from '../lib/api';
 import { isValidApiKey } from '../lib/utils';
+import { validateApiKeySecurity } from '../lib/security';
 
 export const authCommands = {
   async login(options: { key?: string }): Promise<void> {
@@ -24,9 +25,12 @@ export const authCommands = {
               if (!input || input.trim().length === 0) {
                 return 'API key is required';
               }
-              if (!isValidApiKey(input.trim())) {
-                return 'Invalid API key format. Expected a long alphanumeric string.';
+              
+              const validation = validateApiKeySecurity(input.trim());
+              if (!validation.valid) {
+                return `Invalid API key: ${validation.reason}`;
               }
+              
               return true;
             }
           }
